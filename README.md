@@ -1,2 +1,2 @@
-# node-console
-Simple CLI application abstract framework.
+# @mrlm.net/node-console
+Simple Node.js CLI application abstract framework.
