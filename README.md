@@ -1,11 +1,21 @@
 # @mrlm.net/node-console
 
+![NPM Version](https://img.shields.io/npm/v/@mrlm.net/node-console)
+![GitHub License](https://img.shields.io/github/license/mrlm-net/node-console)
+
+
+> This package is BETA release and API might sligthly change!
+
 Simple Node.js CLI application abstract framework to make console apps blazing fast!
 
 ## Table of contents
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Basic](#basic)
+  - [Code](#code)
+  - [Code Advanced](#code-advanced)
+  - [Creating Commands](#creating-commands)
 
 ## Installation
 
@@ -21,42 +31,58 @@ $ npm install --save @mrlm.net/node-console
 
 ## Usage
 
+This small framework was designed to be used as binary CLI command executor (via NPX) or JS/TS module to be inserted into your own CLI application.
+
 ### Basic 
 
 ```shell
 $ npx @mrlm.net/node-console [command] [...options]
 ```
 
+#### CLI Options
+
 ### Code
 
-```javascript
+```typescript
 #!/usr/bin/env node
-import { Engine } from './engine';
-
-(async () => {
-  new Engine;
-})();
-
-export {
-    Engine
-}
+import "@mrlm.net/node-console/engine";
 ```
 
-# Advanced
+### Code Advanced
 
-```javascript
+```typescript
 #!/usr/bin/env node
-import { Engine } from './engine';
+import { Engine } from "@mrlm.net/node-console/engine";
 
 (async () => {
   new Engine({
-    configFile:   string;
+    configFile?:  string;
     commandDir?:  string;
     commandType?: string;
   });
 })();
+```
 
-export {
-    Engine
-}
+### Creating Commands
+
+#### ECMA Script syntax
+
+```typescript
+// Required
+export command: string;
+export handler(engine, yargs): void;
+// Optional
+export aliases?: string[];
+export builder?: (yargs) => yargs.Args | yargs.Args
+```
+
+#### CommonJS syntax
+
+```typescript
+// Required
+exports.command: string;
+exports.handler(engine, yargs): void;
+// Optional
+exports.aliases?: string[];
+exports.builder?: (yargs) => yargs.Args | yargs.Args
 ```

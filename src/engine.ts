@@ -5,9 +5,10 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { Console } from "./console";
+import Logger from "./logger";
 
 export interface EngineSettings {
-    configFile: string|undefined;
+    configFile?: string;
     commandDir?: string;
     commandType?: string;
     demandCommandArguments?: number;
@@ -16,6 +17,8 @@ export interface EngineSettings {
 
 export class Engine implements Console {
     
+    protected logger = Logger;
+
     private _args: yargs.Argv<{}> = yargs(
         hideBin(process.argv)
     );
@@ -128,16 +131,15 @@ export class Engine implements Console {
                             path.resolve(
                                 `./${module}.${this._settings?.commandType}`
                             )
-    
                         );
-
-                        return mod;
+                        
+                        return { ...mod, handler: (yargs: yargs.Argv) => mod.handler(yargs, this) };
                     }
                 )
             )
         ).demandCommand(0)
-            .scriptName("$ node-console")
-            .usage("$0 [command] [args...]\n")
+            .scriptName("node-console")
+            .usage("Usage:\n\n  $ $0 [command] [args...]")
             .help()
             .options(this._globalOptions)
             .parse();
@@ -165,8 +167,8 @@ export class Engine implements Console {
         const filePath = path.resolve(`./${this.settings.configFile}`)
 
         if (this.settings.configFile === undefined) {
-            this.isVerboseMode() && console.log(
-                `Config file not defined, skipping...`
+            this.isVerboseMode() && this.logger.info(
+                `Config file not defined, skipping...\n`
             );
             return {};
         }
@@ -174,7 +176,7 @@ export class Engine implements Console {
         if (fs.existsSync(
             filePath
         ) === false) {
-            this.isVerboseMode() && console.log(
+            this.isVerboseMode() && this.logger.info(
                 `Config file "${filePath}" not found, skipping...`
             );
             return {};
