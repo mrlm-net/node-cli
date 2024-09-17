@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 import { Engine } from './engine';
 
-(async () => {
-  console.log('Hello, world!');
-})();
-
 export {
     Engine
 }
+
+export default (async () => new Engine)();

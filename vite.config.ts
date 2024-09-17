@@ -6,13 +6,15 @@ export default defineConfig({
   build: {
     ssr: true,
     lib: {
+      formats: ["es"],
       // Could also be a dictionary or array of multiple entry points
       entry: {
-        index: resolve(__dirname, "src/index.ts")
+        index: resolve(__dirname, "src/cli.ts"),
+        engine: resolve(__dirname, "src/index.ts"),
       },
-      name: "MRLM.NET Node.js Scaffolder",
+      name: "engine",
       // the proper extensions will be added
-      fileName: "vsts-extension-devstack",
+      fileName: "mrlm-net-node-console",
     },
     rollupOptions: {
       // make sure to externalize deps that shouldn"t be bundled

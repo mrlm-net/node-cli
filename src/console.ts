@@ -1,3 +1,5 @@
 
-export interface Console {}
+export interface Console {
+    
+}
 

@@ -2,18 +2,18 @@
     "compilerOptions": {
         "ignoreDeprecations": "5.0",
         "experimentalDecorators": true,
-        "module": "CommonJS",
-        "moduleResolution": "node",
+        "moduleResolution": "Node",
         "sourceMap": false,
         "noImplicitAny": true,
         "noImplicitThis": true,
         "declaration": true,
         "declarationMap": true,
         "strict": true,
-        "target": "es5",
+        "target": "ES5",
+        "module": "CommonJS",
         "rootDir": "./",
         "outDir": "dist/",
         "jsx": "react",
-        "esModuleInterop": true
+        "esModuleInterop": true,
     }
 }
