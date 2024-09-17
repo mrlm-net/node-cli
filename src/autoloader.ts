@@ -4,4 +4,4 @@ export {
     Engine
 }
 
-export default Engine;
+export default new Engine;

@@ -1,6 +1,6 @@
 {
     "name": "@mrlm.net/node-console",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Simple Node.js CLI application abstract framework to make console apps blazing fast!",
     "license": "Apache-2.0",
     "type": "module",
@@ -9,9 +9,7 @@
         "publish": "npm publish --access public",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "bin": {
-        "node-console": "dist/index.js"
-    },
+    "bin": "dist/index.js",
     "module": "./dist/engine.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -20,6 +18,9 @@
     "exports": {
         ".": {
             "import": "./dist/index.js"
+        },
+        "./autoloader": {
+            "import": "./dist/main.js"
         },
         "./engine": {
             "import": "./dist/engine.js"
