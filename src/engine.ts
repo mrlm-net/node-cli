@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { globSync } from "glob";
-import yargs from "yargs";
+import yargs, { alias } from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { Console, ConsoleSettings } from "./console";
-import Logger from "./logger";
+import Logger, { logger } from "./logger";
+import { Command } from "./command";
 
 export class Engine implements Console {
     
@@ -19,7 +20,9 @@ export class Engine implements Console {
         configFile: undefined,
         commandDir: "commands",
         demandCommandArguments: 0,
-        recursive: true
+        recursive: true,
+        verbose: false,
+        verboseLevel: "info"
     }
 
     private _globalOptions: any = {
@@ -46,7 +49,13 @@ export class Engine implements Console {
             type: "boolean",
             description: "Run with verbose logging",
             default: false
-        }
+        },
+        "verboseLevel": {
+            alias: "l",
+            type: "string",
+            description: "Level of verbose logging",
+            default: "info"
+        },
     };
 
     private _optionSettings: any = {};
@@ -55,6 +64,10 @@ export class Engine implements Console {
 
     constructor(settings?: ConsoleSettings, globalOptions?: any) {
         this.setGlobalOptions(globalOptions);
+        this.logger.level = this.globalOption("verboseLevel");
+        this.isVerboseMode() && this.logger.debug(
+            `Constructing NCLI engine...`
+        );
         this.initializeSettings({ ...this._defaults, ...settings } as ConsoleSettings);
         this.initializeEngine();
     }
@@ -70,28 +83,55 @@ export class Engine implements Console {
     protected globalOption(key: string, fallback?: any): any {
         return this._optionSettings[key.replace(/^\-\-?(.*)$/, "$1")] ||  (
             fallback || (
-                this._globalOptions[key.replace(/^\-\-?(.*)$/, "$1")].default || undefined
+                this._globalOptions[key.replace(/^\-\-?(.*)$/, "$1")]?.default || undefined
             )
         );
     }
 
     protected async loadCommands() {
-        this._args.command(
-            await Promise.all(
-                this.loadCommandModules(this.settings.commandDir || "commands").map(
-                    async (module: string) => {
-                        const mod = await import(
-                            path.resolve(
-                                `./${module}.js`
-                            )
-                        );
-                        
-                        return { ...mod, handler: (yargs: yargs.Argv) => mod.handler(yargs, this) };
-                    }
-                )
+        const commands = await Promise.all(
+            this.loadCommandModules(this.settings.commandDir || "commands").map(
+                async (module: string) => {
+                    this.isVerboseMode() && this.logger.debug(
+                        `Loading command "${module}" to NCLI engine...`
+                    );
+
+                    const mod = await import(
+                        path.resolve(
+                            `./${module}.js`
+                        )
+                    );
+
+                    this.isVerboseMode() && this.logger.debug(
+                        `Command loaded "${module}" to NCLI engine...`
+                    );
+
+                    const name = mod.command.split(" ")[0].toUpperCase();
+                    const handlerLogger = logger(`${name}`);
+                    handlerLogger.level = this.settings.verboseLevel;
+                    
+                    return { ...mod, handler: (yargs: yargs.Argv) => {
+                            this.isVerboseMode() && console.log("\n")
+                            mod.handler({
+                                logger: handlerLogger,
+                                settings: this.settings,
+                                isVerboseMode: this.isVerboseMode(),
+                                yargs: yargs
+                            })
+                        } 
+                    };
+                }
             )
-        ).demandCommand(this.settings.demandCommandArguments)
-            .scriptName("nc")
+        );
+
+        this.isVerboseMode() && this.logger.debug(
+            `Commands loaded to NCLI engine...`
+        );
+
+        // Configure and excute YARGS instance parse handler
+        this._args.command(commands)
+            .demandCommand(this.settings.demandCommandArguments)
+            .scriptName("ncli")
             .usage("Usage:\n\n  $0 [command] [args...]")
             .help()
             .options(this._globalOptions)
@@ -137,6 +177,9 @@ export class Engine implements Console {
     }
 
     private async initializeEngine() {
+        this.isVerboseMode() && this.logger.debug(
+            `NCLI engine has been contstructed...`
+        );
         await this.loadCommands();
     }
 

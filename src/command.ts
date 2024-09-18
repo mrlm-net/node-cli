@@ -1,4 +1,5 @@
 import yargs from "yargs";
+import Engine from "./engine";
 
 export interface Command {
     aliases?: Alias | Alias[];
@@ -9,9 +10,16 @@ export interface Command {
     handler: Handler;
 }
 
+export interface HandlerInputParameters {
+    logger: Engine["logger"];
+    settings: Engine["settings"];   
+    isVerboseMode: boolean;
+    yargs: yargs.Argv;
+}
+
 export type Alias = string;
 export type Builder = (yargs: yargs.Argv) => yargs.Argv | yargs.BuilderArguments<yargs.Argv>;
 export type Description = string;
 export type Deprecated = boolean;
-export type Handler = () => void;
+export type Handler = (params: HandlerInputParameters) => void;
 export type Name  = string;

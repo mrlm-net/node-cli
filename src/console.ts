@@ -7,5 +7,7 @@ export interface ConsoleSettings {
     commandDir?: string;
     demandCommandArguments?: number;
     recursive?: boolean;
+    verbose?: boolean;  
+    verboseLevel?: string;
 }
 

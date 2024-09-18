@@ -1,13 +1,13 @@
 import { createLogger, transports, format} from 'winston';
 
-export default createLogger({
+export const logger = (group: string) => createLogger({
     format: format.combine(
         format.colorize(),
         format.timestamp({
             format: "YYYY-MM-DD HH:mm:ss"
         }),
         format.printf(
-            (info) => `[DEFAULT] [${info.timestamp}] ${info.level}: ${info.message}`
+            (info) => `[${group}] [${info.timestamp}] ${info.level}: ${info.message}`
         ),
         
     ),
@@ -15,3 +15,5 @@ export default createLogger({
         new transports.Console(),
     ]
 });
+
+export default logger("NCLI");

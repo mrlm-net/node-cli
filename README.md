@@ -1,7 +1,7 @@
 # @mrlm.net/node-cli
 
-![NPM Version](https://img.shields.io/npm/v/@mrlm.net/node-console)
-![GitHub License](https://img.shields.io/github/license/mrlm-net/node-console)
+![NPM Version](https://img.shields.io/npm/v/@mrlm.net/node-cli)
+![GitHub License](https://img.shields.io/github/license/mrlm-net/node-cli)
 
 > This package is BETA release and API might sligthly change!
 
@@ -11,10 +11,8 @@ Simple Node.js CLI application abstract framework to make console apps blazing f
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Basic](#basic)
+  - [CLI usage](#cli-usage)
   - [Code](#code)
-  - [Code Advanced](#code-advanced)
-  - [Typescript](#code-typescript)
   - [Creating Commands](#creating-commands)
 - [Configuration](#configuration)
 
@@ -46,6 +44,16 @@ This small CLI framework was designed to be used as binary CLI command executor 
 $ npx @mrlm.net/node-cli [command] [...options]
 ```
 
+> You can also use command aliases as follows:
+
+```shell
+$ npx ncli [command] [...options]
+```
+
+```shell
+$ npx nc [command] [...options]
+```
+
 #### CLI Options
 
 ![alt text](/docs/image-cli.png)
@@ -57,7 +65,7 @@ $ npx @mrlm.net/node-cli [command] [...options]
 import "@mrlm.net/node-cli/autoloader";
 ```
 
-### Code
+#### Advanced
 
 ```typescript
 #!/usr/bin/env node
@@ -65,7 +73,8 @@ import { Engine } from "@mrlm.net/node-cli/engine";
 
 (async () => {
   new Engine({
-      // Global options goes here
+      // global options goes here 
+      // please see configuration section for available options
   });
 })();
 ```
@@ -74,29 +83,41 @@ import { Engine } from "@mrlm.net/node-cli/engine";
 
 Creation of a CLI command was never easy as now, you just need to place your commands to the folder named surprisingly `commands`, into the root of your project, you can also configure this by passing `commandDir` configuration property or CLI flag. Pretty simple, huh?
 
-#### ESM syntax
+You can also create a infinite subfolder structure and if the `recursive` setting of the CLI tool is set to `true`, which is also by default, you can easily create a complex modules which tool will dynamicaly load and execute.
+
+Each module needs to export several properties, but only two of them are mandatory to make command complient to be registred and excuted. Mandatory is `command` property with string value of the command name, second is a function property called `handler` where input is one argument described by `HandlerInputSettings` interface.
+
+#### HandlerInputParameters interface
+
+```typescript
+export interface HandlerInputParameters {
+    logger: Logger;
+    settings: ConsoleSettings;   
+    isVerboseMode: boolean;
+    yargs: yargs.Argv;
+}
+```
+
+#### Command example
 
 ```typescript
 // Required
 export command: string;
-export handler(engine, yargs): void;
+export handler(engine: HandlerInputSettings): void;
 // Optional
 export aliases?: string[];
-export builder?: (yargs) => yargs.Args | yargs.Args
+export builder?: (yargs: yargs.Args) => yargs.Args | yargs.Args
+export deprecated?: boolean
+export description?: string
 ```
 
-#### CJS syntax
-
-```typescript
-// Required
-exports.command: string;
-exports.handler(engine, yargs): void;
-// Optional
-exports.aliases?: string[];
-exports.builder?: (yargs) => yargs.Args | yargs.Args
-```
+> More examples can be found [here](/docs/examples.md).
 
 ## Configuration
+
+Custom configuration of CLI engine is possible via three independent way and their processing is hierarchical as follows `Code < Config file < CLI Flags`. 
+
+### Configuration interface
 
 ```typescript
 export interface ConsoleSettings {
@@ -104,5 +125,19 @@ export interface ConsoleSettings {
     commandDir?: string;
     demandCommandArguments?: number;
     recursive?: boolean;
+    verbose?: boolean;
+    verboseLevel?: string;
 }
 ```
+### Configuration properties
+
+| Configuration key | Type | Flag | Default | Description |
+| :-- | :--: | :--: | :--: | :-- |
+| `configFile` | `string` | `-c` `--configFile` | `undefined` | Path to CLI tool and commands configuration file. |
+| `commandDir` | `string` | `-d` `--commandDir` | `commands`  | Path to directory where command module files are places. |
+| `demandCommandArguments` | - | `number` | `0` | Number of how many commands should be required in user inputs. |
+| `recursive` | `boolean` | `-r` `--recursive` | `true` | If the lookup for the command modules should be recursive or not. |
+| `verbose` | `boolean` | `-v` `--verbose` | `false` | Turn on or off logger verbose mode. This could be used also inside command handler function as it is part of [`HandlerInputParameters`](#handlerinputparameters-interface) interface. |
+| `verboseLevel` | `string` | `-l` `--verboseLevel` | `info` | Level of the logger messages to be displayed, this configuration is independent from verbose flag. Be aware that even verbose is set to false command messages could appear if they are not tested for verbose configuration state before, for that you can use `isVerboseMode` property from `HandlerInputParameters` interface. |
+
+> 2024 &copy; Martin Hrášek - MRLM.NET
