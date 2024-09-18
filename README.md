@@ -48,7 +48,7 @@ $ npx @mrlm.net/node-console [command] [...options]
 
 #### CLI Options
 
-![alt text](./docs/image-cli.png)
+![alt text](/docs/image-cli.png)
 
 ### Code
 
