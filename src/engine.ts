@@ -4,15 +4,8 @@ import { globSync } from "glob";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { Console } from "./console";
+import { Console, ConsoleSettings } from "./console";
 import Logger from "./logger";
-
-export interface EngineSettings {
-    configFile?: string;
-    commandDir?: string;
-    demandCommandArguments?: number;
-    recursive?: boolean;
-}
 
 export class Engine implements Console {
     
@@ -22,7 +15,7 @@ export class Engine implements Console {
         hideBin(process.argv)
     );
 
-    private _defaults: EngineSettings = {
+    private _defaults: ConsoleSettings = {
         configFile: undefined,
         commandDir: "commands",
         demandCommandArguments: 0,
@@ -46,11 +39,11 @@ export class Engine implements Console {
 
     private _optionSettings: any = {};
 
-    private _settings: EngineSettings | undefined = {} as EngineSettings;
+    private _settings: ConsoleSettings | undefined = {} as ConsoleSettings;
 
-    constructor(settings?: EngineSettings, globalOptions?: any) {
+    constructor(settings?: ConsoleSettings, globalOptions?: any) {
         this.setGlobalOptions(globalOptions);
-        this.initializeSettings({ ...this._defaults, ...settings } as EngineSettings);
+        this.initializeSettings({ ...this._defaults, ...settings } as ConsoleSettings);
         this.initializeEngine();
     }
 
@@ -121,11 +114,11 @@ export class Engine implements Console {
         });
     }
 
-    private initializeSettings(settings: EngineSettings | undefined) {
+    private initializeSettings(settings: ConsoleSettings | undefined) {
         const options = this.loadSettingsFromGlobalOptions()
-        this._settings = { ...settings, ...options  } as EngineSettings;
+        this._settings = { ...settings, ...options  } as ConsoleSettings;
         this._settings = { 
-            ...settings || {} as EngineSettings, 
+            ...settings || {} as ConsoleSettings, 
             ...this.loadConfigFile(),
             ...options
         };    

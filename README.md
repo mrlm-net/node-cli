@@ -14,6 +14,7 @@ Simple Node.js CLI application abstract framework to make console apps blazing f
   - [Basic](#basic)
   - [Code](#code)
   - [Code Advanced](#code-advanced)
+  - [Typescript](#code-typescript)
   - [Creating Commands](#creating-commands)
 - [Configuration](#configuration)
 
@@ -71,9 +72,9 @@ import { Engine } from "@mrlm.net/node-console/engine";
 
 ### Creating Commands
 
-Creating of a command was never easy as now, you just need to place your commands to the folder named surprisingly `commands` into the root of your project, you can also configure this by passing `commandDir` configuration property or CLI flag. Pretty simple, huh?
+Creation of a CLI command was never easy as now, you just need to place your commands to the folder named surprisingly `commands`, into the root of your project, you can also configure this by passing `commandDir` configuration property or CLI flag. Pretty simple, huh?
 
-#### ECMA Script syntax
+#### ESM syntax
 
 ```typescript
 // Required
@@ -84,7 +85,7 @@ export aliases?: string[];
 export builder?: (yargs) => yargs.Args | yargs.Args
 ```
 
-#### CommonJS syntax
+#### CJS syntax
 
 ```typescript
 // Required
@@ -96,3 +97,12 @@ exports.builder?: (yargs) => yargs.Args | yargs.Args
 ```
 
 ## Configuration
+
+```typescript
+export interface ConsoleSettings {
+    configFile?: string;
+    commandDir?: string;
+    demandCommandArguments?: number;
+    recursive?: boolean;
+}
+```

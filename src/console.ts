@@ -1,6 +1,11 @@
-import { EngineSettings } from './engine';
-
 export interface Console {
-    settings: EngineSettings;    
+    settings: ConsoleSettings;    
+}
+
+export interface ConsoleSettings {
+    configFile?: string;
+    commandDir?: string;
+    demandCommandArguments?: number;
+    recursive?: boolean;
 }
 
