@@ -101,14 +101,26 @@ export interface HandlerInputParameters {
 #### Command example
 
 ```typescript
-// Required
-export command: string;
-export handler(engine: HandlerInputSettings): void;
-// Optional
-export aliases?: string[];
-export builder?: (yargs: yargs.Args) => yargs.Args | yargs.Args
-export deprecated?: boolean
-export description?: string
+export interface Command {
+    aliases?: Alias | Alias[];
+    builder?: Builder;
+    command: Name;
+    deprecated?: Deprecated;
+    description?: Description;
+    handler: Handler;
+}
+```
+
+
+__Command Types__
+
+```typescript
+export type Alias = string;
+export type Builder = (yargs: yargs.Argv) => yargs.Argv | yargs.BuilderArguments<yargs.Argv>;
+export type Description = string;
+export type Deprecated = boolean;
+export type Handler = (params: HandlerInputParameters) => void;
+export type Name  = string;
 ```
 
 > More examples can be found [here](/docs/examples.md).
