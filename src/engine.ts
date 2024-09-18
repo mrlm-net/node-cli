@@ -91,7 +91,7 @@ export class Engine implements Console {
                 )
             )
         ).demandCommand(this.settings.demandCommandArguments)
-            .scriptName("node-console")
+            .scriptName("nc")
             .usage("Usage:\n\n  $0 [command] [args...]")
             .help()
             .options(this._globalOptions)

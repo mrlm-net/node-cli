@@ -1,12 +1,12 @@
 {
-    "name": "@mrlm.net/node-console",
+    "name": "@mrlm.net/node-cli",
     "version": "0.4.0",
     "description": "Simple Node.js CLI application abstract framework to make console apps blazing fast!",
     "license": "Apache-2.0",
     "type": "module",
     "repository": {
         "type": "git",
-        "url": "https://github.com/mrlm-net/node-console.git"
+        "url": "git+https://github.com/mrlm-net/node-cli.git"
     },
     "scripts": {
         "build": "npx vite build",
@@ -15,7 +15,8 @@
     },
     "bin": {
         "nc": "dist/index.js",
-        "node-console": "dist/index.js"
+        "ncli": "dist/index.js",
+        "node-cli": "dist/index.js"
     },
     "module": "./dist/engine.js",
     "types": "./dist/index.d.ts",

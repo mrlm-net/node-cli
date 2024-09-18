@@ -15,7 +15,7 @@ export default defineConfig({
       },
       name: "engine",
       // the proper extensions will be added
-      fileName: "mrlm-net-node-console",
+      fileName: "mrlm-net-node-cli",
     },
     rollupOptions: {
       // make sure to externalize deps that shouldn"t be bundled

@@ -1,4 +1,4 @@
-# @mrlm.net/node-console
+# @mrlm.net/node-cli
 
 ![NPM Version](https://img.shields.io/npm/v/@mrlm.net/node-console)
 ![GitHub License](https://img.shields.io/github/license/mrlm-net/node-console)
@@ -23,18 +23,18 @@ Simple Node.js CLI application abstract framework to make console apps blazing f
 Depending on your use case you can install package as normal or development dependency. Storing package as development dependency could be useful when you are using this tool just for local development related automations. Also you can create bundle with CLI core and your commands to create your own CLI package which users can use via `NPX`.
 
 ```shell
-$ yarn add @mrlm.net/node-console
+$ yarn add @mrlm.net/node-cli
 ```
 
-> If you'd like to add it as development dependecy use `$ yarn add -D @mrlm.net/node-console` command.
+> If you'd like to add it as development dependecy use `$ yarn add -D @mrlm.net/node-cli` command.
 
 or 
 
 ```shell
-$ npm install --save @mrlm.net/node-console
+$ npm install --save @mrlm.net/node-cli
 ```
 
-> If you'd like to install it as development dependecy use `$ npm install --save-dev @mrlm.net/node-console` command.
+> If you'd like to install it as development dependecy use `$ npm install --save-dev @mrlm.net/node-cli` command.
 
 ## Usage
 
@@ -43,7 +43,7 @@ This small CLI framework was designed to be used as binary CLI command executor 
 ### CLI usage 
 
 ```shell
-$ npx @mrlm.net/node-console [command] [...options]
+$ npx @mrlm.net/node-cli [command] [...options]
 ```
 
 #### CLI Options
@@ -54,14 +54,14 @@ $ npx @mrlm.net/node-console [command] [...options]
 
 ```typescript
 #!/usr/bin/env node
-import "@mrlm.net/node-console/autoloader";
+import "@mrlm.net/node-cli/autoloader";
 ```
 
 ### Code
 
 ```typescript
 #!/usr/bin/env node
-import { Engine } from "@mrlm.net/node-console/engine";
+import { Engine } from "@mrlm.net/node-cli/engine";
 
 (async () => {
   new Engine({
