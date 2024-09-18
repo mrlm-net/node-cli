@@ -47,6 +47,8 @@ $ npx @mrlm.net/node-console [command] [...options]
 
 #### CLI Options
 
+![alt text](./docs/image.png)
+
 ### Code
 
 ```typescript
