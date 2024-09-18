@@ -10,7 +10,6 @@ import Logger from "./logger";
 export interface EngineSettings {
     configFile?: string;
     commandDir?: string;
-    commandType?: string;
     demandCommandArguments?: number;
     recursive?: boolean;
 }
@@ -26,7 +25,6 @@ export class Engine implements Console {
     private _defaults: EngineSettings = {
         configFile: undefined,
         commandDir: "commands",
-        commandType: "js",
         demandCommandArguments: 0,
         recursive: true
     }
@@ -56,8 +54,12 @@ export class Engine implements Console {
         this.initializeEngine();
     }
 
-    protected get settings(): any {
+    public get settings(): any {
         return this._settings;
+    }
+
+    protected isVerboseMode(): boolean {
+        return this.globalOption("verbose");
     }
 
     protected globalOption(key: string, fallback?: any): any {
@@ -68,6 +70,28 @@ export class Engine implements Console {
         );
     }
 
+    protected async loadCommands() {
+        this._args.command(
+            await Promise.all(
+                this.loadCommandModules(this.settings.commandDir || "commands").map(
+                    async (module: string) => {
+                        const mod = await import(
+                            path.resolve(
+                                `./${module}.js`
+                            )
+                        );
+                        
+                        return { ...mod, handler: (yargs: yargs.Argv) => mod.handler(yargs, this) };
+                    }
+                )
+            )
+        ).demandCommand(this.settings.demandCommandArguments)
+            .scriptName("node-console")
+            .usage("Usage:\n\n  $ $0 [command] [args...]")
+            .help()
+            .options(this._globalOptions)
+            .parse();
+    }
 
     private setGlobalOptions(options: any) {
         this._globalOptions = { ...this._globalOptions, ...options };
@@ -122,33 +146,10 @@ export class Engine implements Console {
         return settings;
     }
 
-    protected async loadCommands() {
-        this._args.command(
-            await Promise.all(
-                this.loadCommandModules(this.settings.commandDir || "commands").map(
-                    async (module: string) => {
-                        const mod = await import(
-                            path.resolve(
-                                `./${module}.${this._settings?.commandType}`
-                            )
-                        );
-                        
-                        return { ...mod, handler: (yargs: yargs.Argv) => mod.handler(yargs, this) };
-                    }
-                )
-            )
-        ).demandCommand(0)
-            .scriptName("node-console")
-            .usage("Usage:\n\n  $ $0 [command] [args...]")
-            .help()
-            .options(this._globalOptions)
-            .parse();
-    }
-
     private loadCommandModules(dir: string): string[] {
-        let mask = `/${dir}/*`;
+        let mask = `${dir}/*`;
         if (this.settings.recursive) {
-            mask = `/${dir}/**`;
+            mask = `${dir}/**`;
         }
 
         return globSync(
@@ -157,7 +158,7 @@ export class Engine implements Console {
                 nodir: true,
             }
         ).filter(
-            (module: string) => module.split(".")[module.split(".").length - 1] === this._settings?.commandType
+            (module: string) => module.split(".")[module.split(".").length - 1] === "js"
         ).map(
             (module: string) => module.split(".").slice(0, -1).join(".")
         );
@@ -187,10 +188,6 @@ export class Engine implements Console {
                 filePath, "utf8"
             )
         );
-    }
-
-    protected isVerboseMode(): boolean {
-        return this.globalOption("verbose");
     }
 }
 

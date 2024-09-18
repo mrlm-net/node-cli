@@ -9,7 +9,10 @@
         "publish": "npm publish --access public",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "bin": "dist/index.js",
+    "bin": {
+        "nc": "dist/index.js",
+        "node-console": "dist/index.js"
+    },
     "module": "./dist/engine.js",
     "types": "./dist/index.d.ts",
     "files": [

@@ -10,8 +10,8 @@ export default defineConfig({
       // Could also be a dictionary or array of multiple entry points
       entry: {
         main: resolve(__dirname, "src/autoloader.ts"),
-        index: resolve(__dirname, "src/cli.ts"),
-        engine: resolve(__dirname, "src/index.ts"),
+        engine: resolve(__dirname, "src/engine.ts"),
+        index: resolve(__dirname, "src/cli.ts")
       },
       name: "engine",
       // the proper extensions will be added
