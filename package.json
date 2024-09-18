@@ -4,6 +4,10 @@
     "description": "Simple Node.js CLI application abstract framework to make console apps blazing fast!",
     "license": "Apache-2.0",
     "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mrlm-net/node-console.git"
+    },
     "scripts": {
         "build": "npx vite build",
         "publish": "npm publish --access public",
