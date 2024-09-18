@@ -1,6 +1,6 @@
 {
     "name": "@mrlm.net/node-console",
-    "version": "0.3.4",
+    "version": "0.4.0",
     "description": "Simple Node.js CLI application abstract framework to make console apps blazing fast!",
     "license": "Apache-2.0",
     "type": "module",

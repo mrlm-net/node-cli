@@ -23,11 +23,23 @@ export class Engine implements Console {
     }
 
     private _globalOptions: any = {
+        "commandDir": {
+            alias: "d",
+            type: "string",
+            description: "Path to a command module files.",
+            default: undefined
+        },
         "configFile": {
             alias: "c",
             type: "string",
             description: "Path to a configuration file",
             default: undefined
+        },
+        "recursive": {
+            alias: "r",
+            type: "boolean",
+            description: "Load commands recursively.",
+            default: true
         },
         "verbose": {
             alias: "v",
@@ -80,7 +92,7 @@ export class Engine implements Console {
             )
         ).demandCommand(this.settings.demandCommandArguments)
             .scriptName("node-console")
-            .usage("Usage:\n\n  $ $0 [command] [args...]")
+            .usage("Usage:\n\n  $0 [command] [args...]")
             .help()
             .options(this._globalOptions)
             .parse();
@@ -145,6 +157,10 @@ export class Engine implements Console {
             mask = `${dir}/**`;
         }
 
+        this.isVerboseMode() && this.logger.info(
+            `Loading command modules from "${path.resolve(`./${mask}`)}"...`
+        );
+
         return globSync(
             path.resolve(`./${mask}`), {
                 absolute: false,
@@ -162,7 +178,7 @@ export class Engine implements Console {
 
         if (this.settings.configFile === undefined) {
             this.isVerboseMode() && this.logger.info(
-                `Config file not defined, skipping...\n`
+                `Config file not defined, skipping...`
             );
             return {};
         }
