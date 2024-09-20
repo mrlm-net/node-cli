@@ -44,9 +44,9 @@ export class Engine implements Console {
         },
         "module": {
             alias: "m",
-            type: "boolean",
+            type: "string",
             description: "Name of a bundled module where to load commands from.",
-            default: true
+            default: undefined
         },
         "recursive": {
             alias: "r",
@@ -221,12 +221,10 @@ export class Engine implements Console {
 
         let bundled: any = [];
 
-        if (this.settings.bundleName !== undefined) {
+        if (this.settings.module !== undefined) {
             const binaryPath = dirname(fileURLToPath(import.meta.url));
 
-            const bundlePath = (binaryPath.includes("node_modules")) 
-                ? `node_modules/${this.settings.module}/${this.settings.bundleDir}`
-                : `${binaryPath}/${this.settings.bundleDir}`;
+            const bundlePath = `node_modules/${this.settings.module}/${this.settings.bundleDir}`;
 
             this.isVerboseMode() && this.logger.info(
                 `Loading bundled command modules from "${path.resolve(bundlePath, `./${mask}`)}"...`
