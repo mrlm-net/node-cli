@@ -6,7 +6,8 @@ import { hideBin } from "yargs/helpers";
 
 import { Console, ConsoleSettings } from "./console";
 import Logger, { logger } from "./logger";
-import { Command } from "./command";
+import{ fileURLToPath } from "url" 
+import { dirname } from 'path';
 
 export class Engine implements Console {
     
@@ -17,9 +18,12 @@ export class Engine implements Console {
     );
 
     private _defaults: ConsoleSettings = {
+        bundleDir: "dist",
         configFile: undefined,
         commandDir: "commands",
+        commandName: "ncli",
         demandCommandArguments: 0,
+        module: undefined,
         recursive: true,
         verbose: false,
         verboseLevel: "info"
@@ -38,10 +42,16 @@ export class Engine implements Console {
             description: "Path to a configuration file",
             default: undefined
         },
+        "module": {
+            alias: "m",
+            type: "boolean",
+            description: "Name of a bundled module where to load commands from.",
+            default: true
+        },
         "recursive": {
             alias: "r",
             type: "boolean",
-            description: "Load commands recursively.",
+            description: "Scan commands recursively.",
             default: true
         },
         "verbose": {
@@ -81,9 +91,10 @@ export class Engine implements Console {
     }
 
     protected globalOption(key: string, fallback?: any): any {
-        return this._optionSettings[key.replace(/^\-\-?(.*)$/, "$1")] ||  (
+        const normalizedKey = key.replace(/^\-\-?(.*)$/, "$1")
+        return this._optionSettings[normalizedKey] ||  (
             fallback || (
-                this._globalOptions[key.replace(/^\-\-?(.*)$/, "$1")]?.default || undefined
+                this._globalOptions[normalizedKey]?.default || undefined
             )
         );
     }
@@ -128,11 +139,11 @@ export class Engine implements Console {
             `Commands loaded to NCLI engine...`
         );
 
-        // Configure and excute YARGS instance parse handler
+        // Configure and excute YARGS instance parse
         this._args.command(commands)
             .demandCommand(this.settings.demandCommandArguments)
-            .scriptName("ncli")
             .usage("Usage:\n\n  $0 [command] [args...]")
+            .scriptName(this.settings.commandName)
             .help()
             .options(this._globalOptions)
             .parse();
@@ -195,21 +206,42 @@ export class Engine implements Console {
     }
 
     private loadCommandModules(dir: string): string[] {
-        let mask = `${dir}/*`;
-        if (this.settings.recursive) {
-            mask = `${dir}/**`;
-        }
+        const mask = (this.settings.recursive) ? `${dir}/**` : `${dir}/*`;
 
         this.isVerboseMode() && this.logger.info(
-            `Loading command modules from "${path.resolve(`./${mask}`)}"...`
+            `Loading local command modules from "${path.resolve(`./${mask}`)}"...`
         );
 
-        return globSync(
+        const local = globSync(
             path.resolve(`./${mask}`), {
                 absolute: false,
                 nodir: true,
             }
-        ).filter(
+        );
+
+        let bundled: any = [];
+
+        if (this.settings.bundleName !== undefined) {
+            const binaryPath = dirname(fileURLToPath(import.meta.url));
+
+            const bundlePath = (binaryPath.includes("node_modules")) 
+                ? `node_modules/${this.settings.module}/${this.settings.bundleDir}`
+                : `${binaryPath}/${this.settings.bundleDir}`;
+
+            this.isVerboseMode() && this.logger.info(
+                `Loading bundled command modules from "${path.resolve(bundlePath, `./${mask}`)}"...`
+            );
+
+            bundled = globSync(
+                path.resolve(bundlePath, `./${mask}`), {
+                    absolute: false,
+                    nodir: true,
+                }
+            );
+        }
+        
+        // Load bundle first to allow user to override bundled commands
+        return [...bundled, ...local].filter(
             (module: string) => module.split(".")[module.split(".").length - 1] === "js"
         ).map(
             (module: string) => module.split(".").slice(0, -1).join(".")

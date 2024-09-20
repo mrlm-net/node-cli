@@ -131,3 +131,6 @@ dist
 
 # For testing command templates
 commands
+
+# OSx stuff
+.DS_Store

@@ -1,7 +1,11 @@
 {
     "name": "@mrlm.net/node-cli",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "description": "Simple Node.js CLI application abstract framework to make console apps blazing fast!",
+    "author": {
+        "name": "MRLM.NET",
+        "email": "martin@hrasek.email"
+    },
     "license": "Apache-2.0",
     "type": "module",
     "repository": {
