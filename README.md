@@ -3,7 +3,7 @@
 ![NPM Version](https://img.shields.io/npm/v/@mrlm.net/node-cli)
 ![GitHub License](https://img.shields.io/github/license/mrlm-net/node-cli)
 
-> This package is in BETA release and API might sligthly change in the future, but since version `0.5.0` you can start using it with this remark in the mind!
+> This package is in BETA release and API might sligthly change in the future, but since version `0.6.0` you can start using it with this remark in the mind!
 
 Simple Node.js CLI application abstract framework to make console apps blazing fast with zero cofig and small efforts!
 
@@ -150,7 +150,8 @@ export interface ConsoleSettings {
     commandDir?: string;
     commandName?: string;
     demandCommandArguments?: number;
-    module?: string;
+    middlewares?: ((args?: yargs.Argv) => void)[];
+    modules?: string[];
     recursive?: boolean;
     verbose?: boolean;  
     verboseLevel?: string;
@@ -161,13 +162,14 @@ export interface ConsoleSettings {
 | Configuration key | Type | Flag | Default | Description |
 | :-- | :--: | :--: | :--: | :-- |
 | `bundleDir` | `string` | - | `dist` | Directory of the bundle files |
-| `configFile` | `string` | `-c` `--configFile` | `undefined` | Path to CLI tool and commands configuration file. |
-| `commandDir` | `string` | `-d` `--commandDir` | `commands`  | Path to directory where command module files are places. |
+| `configFile` | `string` | `-c, --configFile` | `undefined` | Path to CLI tool and commands configuration file. |
+| `commandDir` | `string` | `-d, --commandDir` | `commands`  | Path to directory where command module files are places. |
 | `commandName` | `string` | - | `ncli` | Name of the main command binary file to be displayed in the help dialog |
 | `demandCommandArguments` | - | `number` | `0` | Number of how many commands should be required in user inputs. |
-| `module` | `string` | `-m` `--module` | `undefined` | Name of the node module package where to load commands from. |
-| `recursive` | `boolean` | `-r` `--recursive` | `true` | If the lookup for the command modules should be recursive or not. |
-| `verbose` | `boolean` | `-v` `--verbose` | `false` | Turn on or off logger verbose mode. This could be used also inside command handler function as it is part of [`HandlerInputParameters`](#handlerinputparameters-interface) interface. |
-| `verboseLevel` | `string` | `-l` `--verboseLevel` | `info` | Level of the logger messages to be displayed, this configuration is independent from verbose flag. Be aware that even verbose is set to false command messages could appear if they are not tested for verbose configuration state before, for that you can use `isVerboseMode` property from `HandlerInputParameters` interface. |
+| `middlewares` | `array` | - | `[]` | List of global middeware functions to be executed before handler. |
+| `modules` | `string` | `-m, --module` | `[]` | Name of the node module package where to load commands from. |
+| `recursive` | `boolean` | `-r, --recursive` | `true` | If the lookup for the command modules should be recursive or not. |
+| `verbose` | `boolean` | `-v, --verbose` | `false` | Turn on or off logger verbose mode. This could be used also inside command handler function as it is part of [`HandlerInputParameters`](#handlerinputparameters-interface) interface. |
+| `verboseLevel` | `string` | `-l, --verboseLevel` | `info` | Level of the logger messages to be displayed, this configuration is independent from verbose flag. Be aware that even verbose is set to false command messages could appear if they are not tested for verbose configuration state before, for that you can use `isVerboseMode` property from `HandlerInputParameters` interface. |
 
 _2024 &copy; Martin Hrášek - MRLM.NET_

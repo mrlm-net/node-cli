@@ -11,7 +11,7 @@ export interface ConsoleSettings {
     commandName?: string;
     demandCommandArguments?: number;
     middlewares?: ((args?: yargs.Argv) => void)[];
-    module?: string[];
+    modules?: string[];
     recursive?: boolean;
     verbose?: boolean;  
     verboseLevel?: string;

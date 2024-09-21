@@ -25,7 +25,7 @@ export class Engine implements Console {
         commandName: "ncli",
         demandCommandArguments: 0,
         middlewares: [],
-        module: [],
+        modules: [],
         recursive: true,
         verbose: false,
         verboseLevel: "info"
@@ -44,7 +44,7 @@ export class Engine implements Console {
             description: "Path to a configuration file",
             default: undefined
         },
-        "module": {
+        "modules": {
             alias: "m",
             type: "array",
             description: "Name of module(s) to load commands from.",
@@ -102,13 +102,28 @@ export class Engine implements Console {
         );
     }
 
-    protected verboseLog(msg: string, level?: string) {
+    protected verboseLog(logger: any, msg: string, level?: string) {
         if (this.isVerboseMode()) {
-            if (level) {
-
-            }
-    
-            this.logger.info(msg);   
+            switch (level) {
+                case "error":
+                    logger.error(msg); 
+                    break;
+                case "warn":
+                    logger.warn(msg); 
+                    break;
+                case "info":
+                    logger.info(msg); 
+                    break;
+                case "debug":
+                    logger.debug(msg); 
+                    break;
+                case "silly":
+                    logger.silly(msg);
+                    break;
+                default:
+                    logger.info(msg); 
+                    break;
+            }    
         }
     }
 
@@ -143,7 +158,7 @@ export class Engine implements Console {
                                 logger: handlerLogger,
                                 settings: this.settings,
                                 isVerboseMode: this.isVerboseMode(),
-                                verboseLog: (msg: string) => this.verboseLog(msg),
+                                verboseLog: (msg: string, level: string) => this.verboseLog(handlerLogger, msg, level),
                                 prompt: prompt,
                                 yargs: args
                             })
@@ -169,12 +184,12 @@ export class Engine implements Console {
 
                     const handler = { 
                         handler: (yargs: yargs.Argv) => {
-                            this.isVerboseMode() && console.log("\n")
+                            this.isVerboseMode() && console.log("\n");
                             mod.handler({
                                 logger: handlerLogger,
                                 settings: this.settings,
                                 isVerboseMode: this.isVerboseMode(),
-                                verboseLog: (msg: string) => this.verboseLog(msg),
+                                verboseLog: (msg: string, level: string) => this.verboseLog(handlerLogger, msg, level),
                                 prompt: prompt,
                                 yargs: yargs
                             })
@@ -198,7 +213,7 @@ export class Engine implements Console {
                     logger: this.logger,
                     settings: this.settings,
                     isVerboseMode: this.isVerboseMode(),
-                    verboseLog: (msg: string) => this.verboseLog(msg),
+                    verboseLog: (msg: string, level: string) => this.verboseLog(this.logger, msg, level),
                     prompt: prompt,
                     yargs: yargs
                 })
@@ -302,10 +317,10 @@ export class Engine implements Console {
 
         let bundled: any = [];
 
-        if (this.settings.module !== undefined && this.settings.module.length > 0) {
+        if (this.settings.modules !== undefined && this.settings.modules.length > 0) {
             const binaryPath = dirname(fileURLToPath(import.meta.url));
 
-            const bundlePaths = this.settings.module.map(
+            const bundlePaths = this.settings.modules.map(
                 (module: string) => path.resolve(
                     `node_modules/${module}/${this.settings.bundleDir}`, 
                     `./${mask}`
