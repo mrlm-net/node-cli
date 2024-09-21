@@ -8,9 +8,14 @@
     },
     "license": "Apache-2.0",
     "type": "module",
+    "homepage": "https://github.com/mrlm-net/node-cli#readme",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/mrlm-net/node-cli.git"
+    },
+    "bugs": {
+        "url": "https://github.com/mrlm-net/node-cli/issues",
+        "email": "support@mrlm.net"
     },
     "scripts": {
         "build": "npx vite build",

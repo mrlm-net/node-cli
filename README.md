@@ -60,12 +60,16 @@ $ npx nc [command] [...options]
 
 ### Code
 
+If you'd like to build your own tool from the scratch or planning to use it as part of your application, you can use an `autoloader` package, where you get default `NCLI` configuration by just pasting following line in your project entrypoint.
+
 ```typescript
 #!/usr/bin/env node
 import "@mrlm.net/node-cli/autoloader";
 ```
 
 #### Advanced
+
+There also could be cases when you just need more configuration to be passed like global middlewares for example or project specific configurations. In the case just import `engine` package from `NCLI` and create instance manually as follows on attached example.
 
 ```typescript
 #!/usr/bin/env node
@@ -86,6 +90,8 @@ Creation of a CLI command was never easy as now, you just need to place your com
 You can also create a infinite subfolder structure and if the `recursive` setting of the CLI tool is set to `true`, which is also by default, you can easily create a complex modules which tool will dynamicaly load and execute.
 
 Each module needs to export several properties, but only two of them are mandatory to make command complient to be registred and excuted. Mandatory is `command` property with string value of the command name, second is a function property called `handler` where input is one argument described by `HandlerInputSettings` interface.
+
+There is also possibility to call modules stored in `node_modules` folder. You just need to pass a configuration property `modules` via CLI flag, config file or directly to the class instance. You can load commands from multiple modules at the same time, you just need to provide list of module names.
 
 #### Command interface
 
@@ -178,4 +184,4 @@ export interface ConsoleSettings {
 | `verbose` | `boolean` | `-v, --verbose` | `false` | Turn on or off logger verbose mode. This could be used also inside command handler function as it is part of [`HandlerInputParameters`](#handlerinputparameters-interface) interface. |
 | `verboseLevel` | `string` | `-l, --verboseLevel` | `info` | Level of the logger messages to be displayed, this configuration is independent from verbose flag. Be aware that even verbose is set to false command messages could appear if they are not tested for verbose configuration state before, for that you can use `isVerboseMode` property from `HandlerInputParameters` interface. |
 
-_2024 &copy; Martin Hrášek - MRLM.NET_
+_2024 All rights reserved &copy; Martin Hrášek - MRLM.NET_
