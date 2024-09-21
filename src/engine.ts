@@ -1,13 +1,14 @@
 import fs from "fs";
 import path from "path";
 import { globSync } from "glob";
-import yargs, { alias } from "yargs";
+import yargs, { alias, choices } from "yargs";
 import { hideBin } from "yargs/helpers";
+import{ fileURLToPath } from "url" 
+import { dirname } from 'path';
+import prompt from "prompts";
 
 import { Console, ConsoleSettings } from "./console";
 import Logger, { logger } from "./logger";
-import{ fileURLToPath } from "url" 
-import { dirname } from 'path';
 
 export class Engine implements Console {
     
@@ -23,7 +24,8 @@ export class Engine implements Console {
         commandDir: "commands",
         commandName: "ncli",
         demandCommandArguments: 0,
-        module: undefined,
+        middlewares: [],
+        module: [],
         recursive: true,
         verbose: false,
         verboseLevel: "info"
@@ -44,9 +46,9 @@ export class Engine implements Console {
         },
         "module": {
             alias: "m",
-            type: "string",
-            description: "Name of a bundled module where to load commands from.",
-            default: undefined
+            type: "array",
+            description: "Name of module(s) to load commands from.",
+            default: []
         },
         "recursive": {
             alias: "r",
@@ -64,6 +66,7 @@ export class Engine implements Console {
             alias: "l",
             type: "string",
             description: "Level of verbose logging",
+            choices: ["error", "warn", "info", "debug"],
             default: "info"
         },
     };
@@ -99,7 +102,17 @@ export class Engine implements Console {
         );
     }
 
-    protected async loadCommands() {
+    protected verboseLog(msg: string, level?: string) {
+        if (this.isVerboseMode()) {
+            if (level) {
+
+            }
+    
+            this.logger.info(msg);   
+        }
+    }
+
+    private async loadCommands() {
         const commands = await Promise.all(
             this.loadCommandModules(this.settings.commandDir || "commands").map(
                 async (module: string) => {
@@ -117,20 +130,59 @@ export class Engine implements Console {
                         `Command loaded "${module}" to NCLI engine...`
                     );
 
+                    // Here we should prepare objects to be injected into the command handler
                     const name = mod.command.split(" ")[0].toUpperCase();
                     const handlerLogger = logger(`${name}`);
                     handlerLogger.level = this.settings.verboseLevel;
-                    
-                    return { ...mod, handler: (yargs: yargs.Argv) => {
+
+                    // Do the similar thing for the middleware handler
+
+                    const middlewares = (mod.middlewares || []).map(
+                        (middleware: any) => (args: yargs.Argv) => {
+                            middleware({
+                                logger: handlerLogger,
+                                settings: this.settings,
+                                isVerboseMode: this.isVerboseMode(),
+                                verboseLog: (msg: string) => this.verboseLog(msg),
+                                prompt: prompt,
+                                yargs: args
+                            })
+                        });
+
+                    // Here we should translate the command interface to a yargs command interface and do some magic via builder function
+                    const builder = {
+                        builder: (args: yargs.Argv) => {
+                            const rawCMD = mod.command.split(" ")[0];
+                            args.usage(`Command usage:\n\n  $0 ${mod.command}`)
+
+                            if (mod.options) {
+                                args.options(mod.options)
+                                    .group(
+                                        Object.keys(mod.options), 
+                                        `${rawCMD.charAt(0).toUpperCase()}${rawCMD.slice(1)} command options:`
+                                    );
+                            }
+                
+                            return (mod.builder) ? mod.builder(args) : args;
+                        }
+                    };
+
+                    const handler = { 
+                        handler: (yargs: yargs.Argv) => {
                             this.isVerboseMode() && console.log("\n")
                             mod.handler({
                                 logger: handlerLogger,
                                 settings: this.settings,
                                 isVerboseMode: this.isVerboseMode(),
+                                verboseLog: (msg: string) => this.verboseLog(msg),
+                                prompt: prompt,
                                 yargs: yargs
                             })
                         } 
-                    };
+                    }
+                
+                    // Return the command object
+                    return { ...mod, ...builder, ...handler, middlewares };
                 }
             )
         );
@@ -139,21 +191,42 @@ export class Engine implements Console {
             `Commands loaded to NCLI engine...`
         );
 
+
+        const globalMiddlewares = this.settings.middlewares.map(
+            (middleware: any) => (args: yargs.Argv) => {
+                middleware({
+                    logger: this.logger,
+                    settings: this.settings,
+                    isVerboseMode: this.isVerboseMode(),
+                    verboseLog: (msg: string) => this.verboseLog(msg),
+                    prompt: prompt,
+                    yargs: yargs
+                })
+            }) || [];
         // Configure and excute YARGS instance parse
-        this._args.command(commands)
+        this._args.middleware(globalMiddlewares)
+            .command(commands)
             .demandCommand(this.settings.demandCommandArguments)
-            .usage("Usage:\n\n  $0 [command] [args...]")
+            .usage("Library usage:\n\n  $0 [command] [args...]")
             .scriptName(this.settings.commandName)
             .help()
             .options(this._globalOptions)
+            .showHelpOnFail(true)
+            // Scale to full terminal width based on window size
+            .wrap((this._args.terminalWidth() - 1) < 80 ? 80 : (this._args.terminalWidth() - 1))
+            .env("NCLI_")
+            .completion()
+            .epilogue(`${new Date().getFullYear()} © MRLM.net`)
             .parse();
     }
 
     private setGlobalOptions(options: any) {
+        // Merge global options with provided options to allow user override
         this._globalOptions = { ...this._globalOptions, ...options };
 
         const globalOptionKeysWithAliases: any = {};
 
+        // CONSIDER throw an error if an alias is already defined
         for (let key in this._globalOptions) {
             if (this._globalOptions[key].alias !== undefined) {
                 globalOptionKeysWithAliases[this._globalOptions[key].alias] = key;
@@ -161,7 +234,7 @@ export class Engine implements Console {
             globalOptionKeysWithAliases[key] = key;
         }
 
-        process.argv.forEach((arg: string) => {
+        process.argv.forEach((arg: string, index: number) => {
             if (arg.startsWith(`-`)) {
                 const key = globalOptionKeysWithAliases[arg.replace(/^\-\-?(.*)$/, "$1")];
                 if (key) {
@@ -169,8 +242,16 @@ export class Engine implements Console {
                     
                     if (config.type === "boolean") {
                         this._optionSettings[key] = true;
-                    } else {
+                    } else if (config.type === "array") {
+                        if (!this._optionSettings[key]) {
+                            this._optionSettings[key] = [];
+                        }
+                        this._optionSettings[key].push(process.argv[index + 1]);
+
+                    } else if (config.type === "string") {
                         this._optionSettings[key] = process.argv[process.argv.indexOf(arg) + 1];
+                    } else {
+                        this._optionSettings[key] = undefined;
                     }
                 }
             }
@@ -221,21 +302,27 @@ export class Engine implements Console {
 
         let bundled: any = [];
 
-        if (this.settings.module !== undefined) {
+        if (this.settings.module !== undefined && this.settings.module.length > 0) {
             const binaryPath = dirname(fileURLToPath(import.meta.url));
 
-            const bundlePath = `node_modules/${this.settings.module}/${this.settings.bundleDir}`;
-
-            this.isVerboseMode() && this.logger.info(
-                `Loading bundled command modules from "${path.resolve(bundlePath, `./${mask}`)}"...`
-            );
-
-            bundled = globSync(
-                path.resolve(bundlePath, `./${mask}`), {
+            const bundlePaths = this.settings.module.map(
+                (module: string) => path.resolve(
+                    `node_modules/${module}/${this.settings.bundleDir}`, 
+                    `./${mask}`
+                ), {
                     absolute: false,
                     nodir: true,
                 }
             );
+
+            this.isVerboseMode() && bundlePaths.forEach(
+                (bundlePath: string) => this.logger.info(
+                    `Loading bundled command modules from "${bundlePath}"...`
+                )
+            );
+            
+
+            bundled = globSync(bundlePaths);
         }
         
         // Load bundle first to allow user to override bundled commands
@@ -256,9 +343,7 @@ export class Engine implements Console {
             return {};
         }
 
-        if (fs.existsSync(
-            filePath
-        ) === false) {
+        if (fs.existsSync(filePath) === false) {
             this.isVerboseMode() && this.logger.info(
                 `Config file "${filePath}" not found, skipping...`
             );

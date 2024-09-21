@@ -4,4 +4,6 @@ export {
     Engine
 }
 
-export default new Engine;
+export default new Engine({
+    configFile: "./ncli.config.json"
+});

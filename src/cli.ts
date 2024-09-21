@@ -2,5 +2,5 @@
 import { Engine } from './engine';
 
 (async () => {
-  new Engine();
+  new Engine;
 })();

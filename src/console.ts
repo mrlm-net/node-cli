@@ -1,3 +1,5 @@
+import yargs from 'yargs';
+
 export interface Console {
     settings: ConsoleSettings;    
 }
@@ -8,7 +10,8 @@ export interface ConsoleSettings {
     commandDir?: string;
     commandName?: string;
     demandCommandArguments?: number;
-    module?: string;
+    middlewares?: ((args?: yargs.Argv) => void)[];
+    module?: string[];
     recursive?: boolean;
     verbose?: boolean;  
     verboseLevel?: string;
