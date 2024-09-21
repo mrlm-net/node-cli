@@ -1,5 +1,8 @@
 import yargs from "yargs";
 import Engine from "./engine";
+import prompts from "prompts";
+import { ConsoleSettings } from "./console";
+import { Logger } from "winston";
 
 export interface Command {
     aliases?: Alias | Alias[];
@@ -8,14 +11,16 @@ export interface Command {
     deprecated?: Deprecated;
     description?: Description;
     handler: Handler;
+    middlewares?: Middleware[];
+    options?: Options;
 }
 
 export interface HandlerInputParameters {
-    logger: Engine["logger"];
-    settings: Engine["settings"];   
+    logger: Logger;   
     isVerboseMode: boolean;
+    prompt: prompts.PromptObject;
     verboseLog: (msg: string, level?: string) => void;
-    prompt: any;
+    settings: ConsoleSettings;
     yargs: yargs.Argv;
 }
 
@@ -26,3 +31,4 @@ export type Deprecated = boolean;
 export type Handler = (params: HandlerInputParameters) => void;
 export type Middleware = (args?: yargs.Argv) => void;
 export type Name  = string;
+export type Options = {[key: string]: yargs.Options};

@@ -97,6 +97,8 @@ export interface Command {
     deprecated?: Deprecated;
     description?: Description;
     handler: Handler;
+    middlewares?: Middleware[];
+    options?: Options;
 }
 ```
 
@@ -104,11 +106,13 @@ __Command Types__
 
 ```typescript
 export type Alias = string;
-export type Builder = (yargs: yargs.Argv) => yargs.Argv | yargs.BuilderArguments<yargs.Argv>;
+export type Builder = (yargs?: yargs.Argv) => yargs.Argv | yargs.BuilderArguments<yargs.Argv>;
 export type Description = string;
 export type Deprecated = boolean;
 export type Handler = (params: HandlerInputParameters) => void;
+export type Middleware = (args?: yargs.Argv) => void;
 export type Name  = string;
+export type Options = {[key: string]: yargs.Options};
 ```
 
 #### HandlerInputParameters interface
@@ -118,6 +122,8 @@ export interface HandlerInputParameters {
     logger: Logger;
     settings: ConsoleSettings;   
     isVerboseMode: boolean;
+    prompt: prompts.PromptObject;
+    verboseLog: (msg: string, level?: string) => void;
     yargs: yargs.Argv;
 }
 ```
